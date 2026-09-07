@@ -1,4 +1,4 @@
-import { spamModelService } from './spam-model';
+import { fraudModelService } from './fraud-model';
 
 export type ThreatSeverity = 'CRITICAL' | 'HIGH' | 'ELEVATED' | 'LOW' | 'SAFE';
 
@@ -125,7 +125,7 @@ export async function analyzeFraudText(
   // 1. Run local TFJS Model if available
   let mlScore = 0;
   try {
-    const mlPrediction = await spamModelService.predict(text);
+    const mlPrediction = await fraudModelService.predict(text);
     mlScore = Math.round(mlPrediction.confidence * 100);
   } catch (err) {
     console.warn('ML Service offline, continuing with deep heuristic matrix', err);
@@ -494,11 +494,11 @@ export async function analyzeFraudText(
       classification = 'PAYMENT_REDIRECT_SCAM';
       classificationTitle = 'High-Risk Deceptive Commercial Solicitation';
       mitreCode = 'CWE-200 / FIN-THREAT-01';
-      executiveSummary = 'Multiple high-risk spam and deceptive commercial indicators detected exceeding safe operational thresholds.';
+      executiveSummary = 'Multiple high-risk financial fraud and deceptive indicators detected exceeding safe operational thresholds.';
       verdictAction = {
         title: 'QUARANTINE MESSAGE',
         badgeText: 'HIGH-RISK SOLICITATION',
-        primaryAction: 'Mark message as spam and delete from inbox.',
+        primaryAction: 'Quarantine payload and flag for SOC fraud review.',
         secondaryAction: 'Block sender address at the mail server boundary.'
       };
     }

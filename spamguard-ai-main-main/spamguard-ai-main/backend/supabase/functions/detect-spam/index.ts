@@ -11,11 +11,11 @@ serve(async (req) => {
   }
 
   try {
-    const { message } = await req.json();
+    const { message, sender } = await req.json();
 
     if (!message || typeof message !== 'string') {
       return new Response(
-        JSON.stringify({ error: 'Message is required' }),
+        JSON.stringify({ error: 'Communication payload message is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -29,31 +29,30 @@ serve(async (req) => {
       );
     }
 
-    const systemPrompt = `You are an expert spam detection AI. Analyze the given message and determine if it's spam or not.
+    const systemPrompt = `You are FraudGuard AI, an elite cybersecurity and financial crime detection AI. Analyze the given communication payload and sender for Business Email Compromise (BEC), wire transfer fraud, credential harvesting, cryptocurrency schemes, and social engineering.
 
 You must respond with a JSON object containing:
-- "isSpam": boolean (true if spam, false if not)
-- "confidence": number between 0 and 100 (your confidence percentage)
-- "reasoning": string (brief explanation of why you made this decision)
-- "indicators": array of strings (specific spam indicators found, or reasons it's legitimate)
+- "isFraud": boolean (true if malicious or fraudulent, false if legitimate)
+- "riskScore": number between 0 and 100 (overall fraud risk index)
+- "severity": string ("CRITICAL" | "HIGH" | "ELEVATED" | "SAFE")
+- "classification": string (e.g. "Business Email Compromise (BEC) / Wire Fraud", "Credential Harvesting", "Financial Phishing", "Crypto Scheme", "Legitimate Corporate")
+- "mitreCode": string (e.g. "MITRE ATT&CK: T1566.002", "FIN-SCAM-03")
+- "primaryDirective": string (clear direct operational action, e.g. "HALT TRANSACTION: Do not wire funds")
+- "secondaryDirective": string (out-of-band verification action)
+- "reasoning": string (concise explanation of why this was flagged)
+- "indicators": array of strings (extracted indicators of compromise, suspicious amounts, or legitimate markers)
 
-Spam indicators to look for:
-- Urgent language ("Act now!", "Limited time!", "Don't miss out!")
-- Suspicious links or requests to click
-- Requests for personal/financial information
-- Lottery/prize winning claims
-- Get-rich-quick schemes
-- Impersonation of banks, companies, or authorities
-- Poor grammar/spelling (often intentional to bypass filters)
-- Pressure tactics or threats
-- Too-good-to-be-true offers
-- Unsolicited promotional content
-- Phishing attempts
-- Cryptocurrency scams
+Fraud Vectors to evaluate:
+- Wire/SWIFT redirection & bank account modifications
+- CEO/CFO or executive authority impersonation & secrecy mandates
+- Banking fraud alerts soliciting SSN, PIN, or OTP codes
+- High-yield cryptocurrency arbitrage or unhosted wallet traps
+- Fake invoice renewals & supplier payment diversion
+- Disposable or lookalike sender domains (.xyz, .top, raw IP hosts)
 
 Respond ONLY with the JSON object, no additional text.`;
 
-    console.log("Analyzing message for spam:", message.substring(0, 100) + "...");
+    console.log("Analyzing message for fraud:", message.substring(0, 100) + "...");
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -65,23 +64,23 @@ Respond ONLY with the JSON object, no additional text.`;
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Analyze this message for spam:\n\n${message}` }
+          { role: "user", content: `Analyze this payload for fraud:\nSender: ${sender || 'Unknown'}\nPayload:\n${message}` }
         ],
-        temperature: 0.3,
+        temperature: 0.2,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error("AI API error:", response.status, errorText);
-      
+
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
+
       if (response.status === 402) {
         return new Response(
           JSON.stringify({ error: 'AI credits exhausted. Please add credits.' }),
@@ -90,7 +89,7 @@ Respond ONLY with the JSON object, no additional text.`;
       }
 
       return new Response(
-        JSON.stringify({ error: 'Failed to analyze message' }),
+        JSON.stringify({ error: 'Failed to analyze payload' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -106,10 +105,8 @@ Respond ONLY with the JSON object, no additional text.`;
       );
     }
 
-    // Parse the JSON response from AI
     let result;
     try {
-      // Clean up the response if it contains markdown code blocks
       let cleanContent = content.trim();
       if (cleanContent.startsWith('```json')) {
         cleanContent = cleanContent.replace(/```json\n?/, '').replace(/\n?```$/, '');
@@ -120,38 +117,18 @@ Respond ONLY with the JSON object, no additional text.`;
     } catch (parseError) {
       console.error("Failed to parse AI response:", content);
       return new Response(
-        JSON.stringify({ error: 'Failed to parse AI analysis' }),
+        JSON.stringify({ error: 'Failed to parse AI fraud analysis' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Determine status based on confidence thresholds
-    let status: 'spam' | 'suspicious' | 'safe';
-    if (result.isSpam && result.confidence >= 90) {
-      status = 'spam';
-    } else if (result.isSpam && result.confidence >= 60 || (!result.isSpam && result.confidence < 60)) {
-      status = 'suspicious';
-    } else {
-      status = 'safe';
-    }
-
-    const finalResult = {
-      isSpam: result.isSpam,
-      confidence: result.confidence,
-      status,
-      reasoning: result.reasoning,
-      indicators: result.indicators || [],
-    };
-
-    console.log("Analysis complete:", finalResult);
-
     return new Response(
-      JSON.stringify(finalResult),
+      JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error("Error in detect-spam function:", error);
+    console.error("Error in detect-fraud function:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

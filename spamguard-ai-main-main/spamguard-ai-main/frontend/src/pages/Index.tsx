@@ -1,5 +1,5 @@
 import { Header } from '@/components/Header';
-import { SpamDetector } from '@/components/SpamDetector';
+import { FraudDetector } from '@/components/FraudDetector';
 
 const Index = () => {
   return (
@@ -24,7 +24,7 @@ const Index = () => {
         <Header />
         
         <main className="px-6 pb-16">
-          <SpamDetector />
+          <FraudDetector />
         </main>
 
         {/* Footer */}
