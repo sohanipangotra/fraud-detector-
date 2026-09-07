@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 20% 6%;
+    --foreground: 180 100% 95%;
+
+    --card: 220 20% 10%;
+    --card-foreground: 180 100% 95%;
+
+    --popover: 220 20% 10%;
+    --popover-foreground: 180 100% 95%;
+
+    --primary: 165 100% 50%;
+    --primary-foreground: 220 20% 6%;
+
+    --secondary: 220 20% 15%;
+    --secondary-foreground: 180 100% 90%;
+
+    --muted: 220 15% 18%;
+    --muted-foreground: 180 20% 60%;
+
+    --accent: 280 100% 65%;
+    --accent-foreground: 180 100% 95%;
+
+    --destructive: 0 85% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 145 80% 45%;
+    --success-foreground: 220 20% 6%;
+
+    --warning: 40 100% 55%;
+    --warning-foreground: 220 20% 6%;
+
+    --border: 220 20% 20%;
+    --input: 220 20% 15%;
+    --ring: 165 100% 50%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 220 20% 8%;
+    --sidebar-foreground: 180 100% 90%;
+    --sidebar-primary: 165 100% 50%;
+    --sidebar-primary-foreground: 220 20% 6%;
+    --sidebar-accent: 220 20% 15%;
+    --sidebar-accent-foreground: 180 100% 90%;
+    --sidebar-border: 220 20% 18%;
+    --sidebar-ring: 165 100% 50%;
+
+    /* Gradients */
+    --gradient-cyber: linear-gradient(135deg, hsl(165 100% 50%) 0%, hsl(280 100% 65%) 100%);
+    --gradient-danger: linear-gradient(135deg, hsl(0 85% 55%) 0%, hsl(30 100% 50%) 100%);
+    --gradient-safe: linear-gradient(135deg, hsl(145 80% 45%) 0%, hsl(165 100% 50%) 100%);
+    --gradient-warning: linear-gradient(135deg, hsl(40 100% 55%) 0%, hsl(30 100% 50%) 100%);
+    --gradient-dark: linear-gradient(180deg, hsl(220 20% 8%) 0%, hsl(220 20% 4%) 100%);
+
+    /* Shadows */
+    --shadow-glow-primary: 0 0 30px hsl(165 100% 50% / 0.3);
+    --shadow-glow-danger: 0 0 30px hsl(0 85% 55% / 0.4);
+    --shadow-glow-safe: 0 0 30px hsl(145 80% 45% / 0.3);
+    --shadow-glow-warning: 0 0 30px hsl(40 100% 55% / 0.3);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  code, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer components {
+  .cyber-border {
+    @apply border border-primary/30 hover:border-primary/60 transition-colors duration-300;
+  }
+
+  .glow-primary {
+    box-shadow: var(--shadow-glow-primary);
+  }
+
+  .glow-danger {
+    box-shadow: var(--shadow-glow-danger);
+  }
+
+  .glow-safe {
+    box-shadow: var(--shadow-glow-safe);
+  }
+
+  .glow-warning {
+    box-shadow: var(--shadow-glow-warning);
+  }
+
+  .glow-critical {
+    box-shadow: 0 0 35px hsl(0 85% 55% / 0.5), inset 0 0 15px hsl(0 85% 55% / 0.15);
+  }
+
+  .cyber-card {
+    @apply bg-card/85 backdrop-blur-md border border-primary/20 rounded-2xl shadow-xl transition-all duration-300;
+  }
+
+  .gradient-text-cyber {
+    background: var(--gradient-cyber);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .scanline {
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      hsl(165 100% 50% / 0.03) 2px,
+      hsl(165 100% 50% / 0.03) 4px
+    );
+  }
+}
+
+@layer utilities {
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px hsl(165 100% 50% / 0.3);
+    }
+    50% {
+      box-shadow: 0 0 40px hsl(165 100% 50% / 0.5);
+    }
+  }
+
+  .animate-scan {
+    animation: scan 3s linear infinite;
+  }
+
+  @keyframes scan {
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes radar-sweep {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-radar {
+    animation: radar-sweep 4s linear infinite;
+  }
+}
